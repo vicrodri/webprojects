@@ -56,5 +56,11 @@ app.use(function(err, req, res, next) {
   });
 });
 
+//Conectar a mongoDB
+var mongoose = require('mongoose');
+require('./models/Posts');
+require('./models/Commnets');
+
+mongoose.connect('mongodb://localhost/news');
 
 module.exports = app;
