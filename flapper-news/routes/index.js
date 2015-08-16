@@ -82,7 +82,7 @@ module.exports = router;
 
 //suma votos positivos a un post
 router.put('/posts/:post/upvote', function(req, res, next) {
-  res.post.upvote(function (err, post) {
+  req.post.upvote(function (err, post) {
     if (err){
       return next(err);
     }
@@ -92,7 +92,7 @@ router.put('/posts/:post/upvote', function(req, res, next) {
 
 //suma votos negativos a un post
 router.put('/posts/:post/downvote', function(req, res, next) {
-  res.post.downvote(function (err, post) {
+  req.post.downvote(function (err, post) {
     if (err){
       return next(err);
     }

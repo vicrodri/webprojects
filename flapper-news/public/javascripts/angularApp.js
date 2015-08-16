@@ -44,6 +44,19 @@ app.factory('modelo', ['$http', function ($http){
     })
   };
 
+  //funcion que añade votos positivos al modelo.
+  modelo.upvote = function(post) {
+    return $http.put('/posts/' + post._id + '/upvote').success(function(data) {
+      post.upvotes+=1;
+    });
+  };
+
+  //funcion que añade votos negativos al modelo.
+  modelo.downvote = function(post) {
+    return $http.put('/posts/' + post._id + '/downvote').success(function(data) {
+      post.downvotes+=1;
+    });
+  };
 
   return modelo;
 }]);
@@ -71,12 +84,12 @@ app.controller('MainCtrl', ['$scope', 'modelo', function($scope, modelo){
 
   //añadir voto positivo a un post
   $scope.addVotesUp = function (post) {
-    post.upvotes += 1;
+    modelo.upvote(post);
   };
 
   //añadir voto negativo a un post
   $scope.addVotesDown = function (post) {
-    post.downvotes += 1;
+    modelo.downvote(post);
   };
 }]);
 
