@@ -8,7 +8,12 @@ function($stateProvider, $urlRouterProvider) {
     .state('home', {
       url: '/home',
       templateUrl: '/home.html',
-      controller: 'MainCtrl'
+      controller: 'MainCtrl',
+      resolve: {
+        postPromise: ['modelo', function(modelo) {
+          return modelo.getAll();
+        }]
+      }
     })
     .state('posts', {
       url: '/posts/{id}',
@@ -20,13 +25,28 @@ function($stateProvider, $urlRouterProvider) {
 }]);
 
 //Creacion del objeto como factoría.
-app.factory('modelo', [function (){
+app.factory('modelo', ['$http', function ($http){
   var modelo = {
     posts: []
   };
 
+  //funcion del modelo que recupera todos los posts de BBDD.
+  modelo.getAll = function() {
+    return $http.get('/posts').success(function (data) {
+      angular.copy(data, modelo.posts);
+    });
+  };
+
+  //funcion que crea los post en BBDD.
+  modelo.create = function(post) {
+    return $http.post('/posts', post).success(function (data) {
+      modelo.posts.push(data);
+    })
+  };
+
+
   return modelo;
-}])
+}]);
 
 app.controller('MainCtrl', ['$scope', 'modelo', function($scope, modelo){
   //variable de prueba
@@ -40,16 +60,11 @@ app.controller('MainCtrl', ['$scope', 'modelo', function($scope, modelo){
     if (!$scope.title || $scope.title==='') {
       return;  
     }
-    $scope.posts.push({
-      title: $scope.title, 
-      upvotes: 0,
-      downvotes: 0,
-      link: $scope.link,
-      comments: [
-        {author: 'Uno', body: 'cuerpo uno', upvotes: 0, downvotes: 0},
-        {author: 'Dos', body: 'cuerpo dos', upvotes: 5, downvotes: 2},
-      ]
+    modelo.create({
+      title: $scope.title,
+      link: $scope.link
     });
+    
     $scope.title='';
     $scope.link='';
   };
