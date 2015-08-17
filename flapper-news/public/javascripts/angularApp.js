@@ -18,7 +18,12 @@ function($stateProvider, $urlRouterProvider) {
     .state('posts', {
       url: '/posts/{id}',
       templateUrl: '/posts.html',
-      controller: 'PostCtrl'
+      controller: 'PostCtrl',
+      resolve: {
+        post: ['$stateParams', 'modelo', function($stateParams, modelo) {
+          return modelo.get($stateParams.id);
+        }]
+      }
     });
 
   $urlRouterProvider.otherwise('home');
@@ -58,6 +63,32 @@ app.factory('modelo', ['$http', function ($http){
     });
   };
 
+  //obtiene un post concreto a partir de su id, en este caso la petición 
+  //se realiza de forma asíncrona mediante el uso de la promesa.
+  modelo.get = function (id) {
+    return $http.get('/posts/' + id).then(function(res) {
+      return res.data;
+    });
+  };
+
+  //añade un comentario a un post especifico.
+  modelo.addComment = function(id, comment) {
+    return $http.post('/posts/' + id + '/comments', comment);
+  };
+
+  //añade votos positivos a un comentario
+  modelo.addCommentVotesUp = function (post, comment) {
+    return $http.put('/posts/' + post._id + '/comments/' + comment._id + '/upvote').success(function(data) {
+      comment.upvotes += 1;
+    })
+  };
+
+  //añade votos negativos a un comentario
+  modelo.addCommentVotesDown = function (post, comment) {
+    return $http.put('/posts/' + post._id + '/comments/' + comment._id + '/downvote').success(function(data) {
+      comment.downvotes += 1;
+    })
+  };
   return modelo;
 }]);
 
@@ -93,18 +124,18 @@ app.controller('MainCtrl', ['$scope', 'modelo', function($scope, modelo){
   };
 }]);
 
-app.controller('PostCtrl', ['$scope', '$stateParams', 'modelo', function($scope, $stateParams, modelo){
+app.controller('PostCtrl', ['$scope', 'post', 'modelo', function($scope, post, modelo){
   //Obtiene el Post correcto.
-  $scope.post = modelo.posts[$stateParams.id];
+  $scope.post = post;
 
   //añadir voto positivo a un comentario
   $scope.addCommentVotesUp = function (comment) {
-    comment.upvotes += 1;
+    modelo.addCommentVotesUp(post, comment);
   };
 
   //añadir voto negativo a un comentario
   $scope.addCommentVotesDown = function (comment) {
-    comment.downvotes += 1;
+    modelo.addCommentVotesDown(post, comment);
   };
 
   //añadir comentario
@@ -112,12 +143,13 @@ app.controller('PostCtrl', ['$scope', '$stateParams', 'modelo', function($scope,
     if ($scope.body === '') {
       return;
     }
-    $scope.post.comments.push({
+    modelo.addComment(post._id, {
       body: $scope.body,
-      author: 'user',
-      upvotes: 0,
-      downvotes: 0
+      author: 'user'
+    }).success(function(comment) {
+      $scope.post.comments.push(comment);
     });
+
     $scope.body = '';
   };
 }]);

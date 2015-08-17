@@ -78,8 +78,6 @@ router.get('/posts/:post', function(req, res) {
   });
 });
 
-module.exports = router;
-
 //suma votos positivos a un post
 router.put('/posts/:post/upvote', function(req, res, next) {
   req.post.upvote(function (err, post) {
@@ -102,7 +100,7 @@ router.put('/posts/:post/downvote', function(req, res, next) {
 
 //crear comentarios a un post concreto
 router.post('/posts/:post/comments', function (req, res, next) {
-  var Comment = new Comment(req.body);
+  var comment = new Comment(req.body);
   comment.post = req.post;
 
   comment.save(function(err, comment) {
@@ -119,7 +117,7 @@ router.post('/posts/:post/comments', function (req, res, next) {
 
 //suma votos positivos a un comentario
 router.put('/posts/:post/comments/:comment/upvote', function(req, res, next) {
-  res.comment.upvote(function (err, comment) {
+  req.comment.upvote(function (err, comment) {
     if (err){
       return next(err);
     }
@@ -129,7 +127,7 @@ router.put('/posts/:post/comments/:comment/upvote', function(req, res, next) {
 
 //suma votos negativos a un comentario
 router.put('/posts/:post/comments/:comment/downvote', function(req, res, next) {
-  res.comment.downvote(function (err, comment) {
+  req.comment.downvote(function (err, comment) {
     if (err){
       return next(err);
     }
